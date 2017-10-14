@@ -115,23 +115,25 @@ def main():
         if not os.path.exists(out_dir):
             os.mkdir(out_dir)
 
-        train_ind = [1, 3, 5, 10, 2, 0, 13, 15, 17]
-        x = chainer.Variable(np.asarray(train[train_ind]), volatile='on')
-        x1 = model.decode(model.encode(x)[0])
-        save_image(x.data, filename=os.path.join(out_dir,'train'))
-        save_image(x1.data, filename=os.path.join(out_dir, 'train_reconstructed'))
+        with chainer.no_backprop_mode():
+            train_ind = [1, 3, 5, 10, 2, 0, 13, 15, 17]
+            x = chainer.Variable(xp.asarray(train[train_ind]))
+            x1 = model.decode(model.encode(x)[0])
+            save_image(chainer.cuda.to_cpu(x.data), filename=os.path.join(out_dir,'train'))
+            save_image(chainer.cuda.to_cpu(x1.data), filename=os.path.join(out_dir, 'train_reconstructed'))
 
-        test_ind = [3, 2, 1, 18, 4, 8, 11, 17, 61]
-        x = chainer.Variable(np.asarray(test[test_ind]), volatile='on')
-        x1 = model(x)
-        x1 = model.decode(model.encode(x)[0])
-        save_image(x.data, filename=os.path.join(out_dir, 'test'))
-        save_image(x1.data, filename=os.path.join(out_dir, 'test_reconstructed'))
+            test_ind = [3, 2, 1, 18, 4, 8, 11, 17, 61]
+            x = chainer.Variable(xp.asarray(test[test_ind]))
+            x1 = model(x)
+            x1 = model.decode(model.encode(x)[0])
+            save_image(chainer.cuda.to_cpu(x.data), filename=os.path.join(out_dir, 'test'))
+            save_image(chainer.cuda.to_cpu(x1.data), filename=os.path.join(out_dir, 'test_reconstructed'))
 
-        # draw images from randomly sampled z
-        z = chainer.Variable(np.random.normal(0, 1, (9, n_latent)).astype(np.float32))
-        x = model.decode(z)
-        save_image(x.data, filename=os.path.join(out_dir, 'sampled'))
+            # draw images from randomly sampled z
+            z = chainer.Variable(xp.random.normal(0, 1, (9, n_latent)).astype(np.float32))
+            x = model.decode(z)
+            save_image(chainer.cuda.to_cpu(x.data), filename=os.path.join(out_dir, 'sampled'))
+
     trainer.extend(save_images)
 
     if args.resume:

@@ -1,7 +1,8 @@
 #!/usr/bin/env python
-'''
+"""
 from https://github.com/pfnet/chainer/blob/master/examples/vae/net.py
-'''
+https://github.com/crcrpar/chainer-VAE
+"""
 
 import six
 
