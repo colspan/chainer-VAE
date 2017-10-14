@@ -20,12 +20,15 @@ from chainer.training import extensions, Trainer
 import net
 
 # original images and reconstructed images
+
+
 def save_image(x, filename):
     fig, ax = plt.subplots(3, 3, figsize=(9, 9), dpi=100)
     for ai, xi in zip(ax.flatten(), x):
         ai.imshow(xi.reshape(28, 28))
     fig.savefig(filename)
     plt.close('all')
+
 
 def main():
     parser = argparse.ArgumentParser(description='Chainer example: MNIST')
@@ -43,7 +46,8 @@ def main():
                         help='Use tiny datasets for quick tests')
     parser.add_argument('--out', '-o', type=str, default='./result/',
                         help='dir to save snapshots.')
-    parser.add_argument('--interval', '-i', type=int, default=5, help='interval of save images.')
+    parser.add_argument('--interval', '-i', type=int,
+                        default=5, help='interval of save images.')
     parser.add_argument
     args = parser.parse_args()
 
@@ -72,13 +76,14 @@ def main():
 
     train, test = chainer.datasets.get_mnist(withlabel=False)
     train_iter = chainer.iterators.SerialIterator(train, args.batchsize)
-    test_iter = chainer.iterators.SerialIterator(test, args.batchsize, repeat=False, shuffle=False)
+    test_iter = chainer.iterators.SerialIterator(
+        test, args.batchsize, repeat=False, shuffle=False)
 
     # Set up a trainer
     updater = training.StandardUpdater(train_iter, optimizer, device=args.gpu)
     trainer = training.Trainer(updater, (args.epoch, 'epoch'), out=args.out)
 
-        # Evaluate the model with the test dataset for each epoch
+    # Evaluate the model with the test dataset for each epoch
     trainer.extend(extensions.Evaluator(test_iter, model, device=args.gpu))
 
     # Dump a computational graph from 'loss' variable at the first iteration
@@ -88,13 +93,14 @@ def main():
         trainer.extend(extensions.dump_graph('main/loss'))
 
     # Take a snapshot at each epoch
-    trainer.extend(extensions.snapshot(filename='snapshot_epoch_{.updater.epoch}'), trigger=(args.interval, 'epoch'))
+    trainer.extend(extensions.snapshot(
+        filename='snapshot_epoch_{.updater.epoch}'), trigger=(args.interval, 'epoch'))
 
     # Write a log of evaluation statistics for each epoch
     trainer.extend(extensions.LogReport())
     # if you want to output different log files epoch by epoch,
     # use below statement.
-    #trainer.extend(extensions.LogReport(log_name='log_'+'{epoch}'))
+    # trainer.extend(extensions.LogReport(log_name='log_'+'{epoch}'))
 
     # Print selected entries of the log to stdout
     # Here "main" refers to the target link of the "main" optimizer again, and
@@ -111,7 +117,8 @@ def main():
     # use the extension below.
     @training.make_extension(trigger=(args.interval, 'epoch'))
     def save_images(trainer):
-        out_dir = os.path.join(trainer.out, 'epoch_{}'.format(str(trainer.updater.epoch)))
+        out_dir = os.path.join(
+            trainer.out, 'epoch_{}'.format(str(trainer.updater.epoch)))
         if not os.path.exists(out_dir):
             os.mkdir(out_dir)
 
@@ -119,20 +126,26 @@ def main():
             train_ind = [1, 3, 5, 10, 2, 0, 13, 15, 17]
             x = chainer.Variable(xp.asarray(train[train_ind]))
             x1 = model.decode(model.encode(x)[0])
-            save_image(chainer.cuda.to_cpu(x.data), filename=os.path.join(out_dir,'train'))
-            save_image(chainer.cuda.to_cpu(x1.data), filename=os.path.join(out_dir, 'train_reconstructed'))
+            save_image(chainer.cuda.to_cpu(x.data),
+                       filename=os.path.join(out_dir, 'train'))
+            save_image(chainer.cuda.to_cpu(x1.data),
+                       filename=os.path.join(out_dir, 'train_reconstructed'))
 
             test_ind = [3, 2, 1, 18, 4, 8, 11, 17, 61]
             x = chainer.Variable(xp.asarray(test[test_ind]))
             x1 = model(x)
             x1 = model.decode(model.encode(x)[0])
-            save_image(chainer.cuda.to_cpu(x.data), filename=os.path.join(out_dir, 'test'))
-            save_image(chainer.cuda.to_cpu(x1.data), filename=os.path.join(out_dir, 'test_reconstructed'))
+            save_image(chainer.cuda.to_cpu(x.data),
+                       filename=os.path.join(out_dir, 'test'))
+            save_image(chainer.cuda.to_cpu(x1.data),
+                       filename=os.path.join(out_dir, 'test_reconstructed'))
 
             # draw images from randomly sampled z
-            z = chainer.Variable(xp.random.normal(0, 1, (9, n_latent)).astype(np.float32))
+            z = chainer.Variable(xp.random.normal(
+                0, 1, (9, n_latent)).astype(np.float32))
             x = model.decode(z)
-            save_image(chainer.cuda.to_cpu(x.data), filename=os.path.join(out_dir, 'sampled'))
+            save_image(chainer.cuda.to_cpu(x.data),
+                       filename=os.path.join(out_dir, 'sampled'))
 
     trainer.extend(save_images)
 
@@ -142,6 +155,7 @@ def main():
 
     # Run the training
     trainer.run()
+
 
 if __name__ == '__main__':
     main()

@@ -76,6 +76,7 @@ class VAE(chainer.Chain):
             k (int): Number of Monte Carlo samples used in encoded vector.
             train (bool): If true loss_function is used for training.
         """
+
     def lf(self, x):
         mu, ln_var = self.encode(x)
         batchsize = len(mu.data)
